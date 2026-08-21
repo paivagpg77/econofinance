@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastrar empresa — EconoFinance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/auth.css">
+</head>
+<body>
+
+<header>
+  <div class="nav wrap">
+    <a href="../index.html" aria-label="Página inicial EconoFinance">
+      <svg width="150" height="38" viewBox="0 0 260 64" xmlns="http://www.w3.org/2000/svg" aria-label="EconoFinance">
+        <rect x="0" y="0" width="64" height="64" rx="16" fill="#123328"/>
+        <rect x="13" y="34" width="8" height="16" rx="1.5" fill="#EDE6D6"/>
+        <rect x="25" y="24" width="8" height="26" rx="1.5" fill="#E7C784"/>
+        <path d="M37 50 V22 C37 22 37 15 41 11 C45 15 45 22 45 22 V50 Z" fill="#FFFFFF"/>
+        <text x="76" y="30" font-family="Space Grotesk, Arial, sans-serif" font-size="21" font-weight="600" fill="#123328">Econo</text>
+        <text x="139" y="30" font-family="Space Grotesk, Arial, sans-serif" font-size="21" font-weight="600" fill="#B98A2E">Finance</text>
+      </svg>
+    </a>
+    <button class="btn btn-ghost" onclick="Auth.logout()">Sair</button>
+  </div>
+</header>
+
+<main class="auth-wrap">
+  <div class="auth-card auth-card-wide">
+    <div class="step-indicator">Passo 2 de 2</div>
+    <h1>Cadastre sua empresa</h1>
+    <p class="auth-sub">Esses dados definem quais regras fiscais serão aplicadas automaticamente.</p>
+
+    <div id="alertaEmpresa" class="alert"></div>
+
+    <form id="formEmpresa" novalidate>
+      <div class="form-row">
+        <div>
+          <label for="cnpj">CNPJ (somente números)</label>
+          <input type="text" id="cnpj" name="cnpj" required maxlength="14" placeholder="00000000000000">
+        </div>
+        <div>
+          <label for="razaoSocial">Razão social</label>
+          <input type="text" id="razaoSocial" name="razaoSocial" required placeholder="Nome registrado na Receita">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div>
+          <label for="cnaePrincipal">CNAE principal (7 dígitos)</label>
+          <input type="text" id="cnaePrincipal" name="cnaePrincipal" required maxlength="7" placeholder="4771701">
+        </div>
+        <div>
+          <label for="uf">UF</label>
+          <select id="uf" name="uf" required>
+            <option value="">Selecione</option>
+            <option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option>
+            <option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option>
+            <option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option>
+            <option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+            <option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option>
+            <option>SE</option><option>TO</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div>
+          <label for="municipio">Município</label>
+          <input type="text" id="municipio" name="municipio" required placeholder="Ex: Fortaleza">
+        </div>
+        <div>
+          <label for="regimeTributario">Regime tributário</label>
+          <select id="regimeTributario" name="regimeTributario" required>
+            <option value="">Selecione</option>
+            <option value="simples_nacional">Simples Nacional</option>
+            <option value="lucro_presumido">Lucro Presumido</option>
+            <option value="lucro_real">Lucro Real</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="btnEmpresa">Concluir cadastro</button>
+    </form>
+  </div>
+</main>
+
+<script src="../js/api.js"></script>
+<script>
+  Auth.exigirLogin();
+
+  const form = document.getElementById('formEmpresa');
+  const btn = document.getElementById('btnEmpresa');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+
+    try {
+      await Companies.criar({
+        cnpj: document.getElementById('cnpj').value.trim(),
+        razaoSocial: document.getElementById('razaoSocial').value.trim(),
+        cnaePrincipal: document.getElementById('cnaePrincipal').value.trim(),
+        uf: document.getElementById('uf').value,
+        municipio: document.getElementById('municipio').value.trim(),
+        regimeTributario: document.getElementById('regimeTributario').value,
+      });
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      mostrarAlerta('alertaEmpresa', err.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Concluir cadastro';
+    }
+  });
+</script>
+
+</body>
+</html>

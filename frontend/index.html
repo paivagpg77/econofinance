@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EconoFinance — Gestão financeira e tributária para qualquer segmento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+
+<header>
+  <div class="nav wrap">
+    <a href="index.html" aria-label="Página inicial EconoFinance">
+    <svg width="168" height="42" viewBox="0 0 260 64" xmlns="http://www.w3.org/2000/svg" aria-label="EconoFinance">
+      <defs>
+        <linearGradient id="barGradH" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#D4A24C"/>
+          <stop offset="100%" stop-color="#F1E4C6"/>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="64" height="64" rx="16" fill="#123328"/>
+      <rect x="13" y="34" width="8" height="16" rx="1.5" fill="#EDE6D6"/>
+      <rect x="25" y="24" width="8" height="26" rx="1.5" fill="url(#barGradH)"/>
+      <path d="M37 50 V22 C37 22 37 15 41 11 C45 15 45 22 45 22 V50 Z" fill="#FFFFFF"/>
+      <text x="76" y="30" font-family="Space Grotesk, Arial, sans-serif" font-size="21" font-weight="600" fill="#123328">Econo</text>
+      <text x="139" y="30" font-family="Space Grotesk, Arial, sans-serif" font-size="21" font-weight="600" fill="#B98A2E">Finance</text>
+      <text x="76" y="46" font-family="Manrope, Arial, sans-serif" font-size="9.5" letter-spacing="2.5" fill="#5B6F65">GESTÃO FINANCEIRA MULTIEMPRESA</text>
+    </svg>
+    </a>
+    <nav class="nav-links">
+      <a href="#segmentos">Segmentos</a>
+      <a href="#recursos">Recursos</a>
+      <a href="#planos">Planos</a>
+    </nav>
+    <div style="display:flex; gap:12px;">
+      <a href="pages/login.html" class="btn btn-ghost">Entrar</a>
+      <a href="#planos" class="btn btn-primary">Começar agora</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">Simples · Presumido · Real</div>
+      <h1>Todo imposto calculado.<br>Para <em>qualquer segmento</em> de empresa.</h1>
+      <p class="lead">EconoFinance reúne folha de funcionários, estoque de mercadorias e apuração tributária num só painel — configurado automaticamente conforme o regime, o CNAE e o estado da sua empresa.</p>
+      <div class="hero-ctas">
+        <a href="#planos" class="btn btn-primary">Testar gratuitamente</a>
+        <a href="#recursos" class="btn btn-ghost">Ver como funciona</a>
+      </div>
+      <p class="hero-note">Sem cartão de crédito · Configuração em menos de 10 minutos</p>
+    </div>
+
+    <div class="funnel" aria-hidden="true">
+      <div class="tag t1"><span>#</span>Funcionários</div>
+      <div class="tag t2"><span>#</span>ICMS/ISS</div>
+      <div class="tag t3"><span>#</span>Estoque</div>
+      <div class="tag t4"><span>#</span>Folha de pagamento</div>
+      <div class="tag t5"><span>#</span>PIS/COFINS</div>
+      <div class="tag t6"><span>#</span>Simples Nacional</div>
+      <div class="result-card">
+        <div class="label">Apuração do mês</div>
+        <div class="value">R$ 12.480,36</div>
+        <div class="sub">Calculado automaticamente pela EconoFinance</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="segments" id="segmentos">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Feito para o seu tipo de negócio</div>
+      <h2>Um motor de cálculo, três realidades diferentes</h2>
+      <p>As regras fiscais mudam conforme o segmento. A EconoFinance identifica o CNAE da empresa e aplica automaticamente a lógica correta.</p>
+    </div>
+    <div class="seg-grid">
+      <div class="seg-card">
+        <div class="seg-icon">🏬</div>
+        <h3>Comércio</h3>
+        <p>Empresas que compram, revendem e precisam controlar estoque e margem.</p>
+        <ul>
+          <li>ICMS e ICMS-ST por NCM</li>
+          <li>Controle de estoque e custo médio</li>
+          <li>Precificação com margem real</li>
+        </ul>
+      </div>
+      <div class="seg-card">
+        <div class="seg-icon">🧾</div>
+        <h3>Serviços</h3>
+        <p>Empresas que faturam por hora, projeto ou contrato recorrente.</p>
+        <ul>
+          <li>ISS por município</li>
+          <li>Retenções na fonte</li>
+          <li>Folha com foco em pró-labore</li>
+        </ul>
+      </div>
+      <div class="seg-card">
+        <div class="seg-icon">🏭</div>
+        <h3>Indústria</h3>
+        <p>Empresas que produzem, com cadeia de custos mais complexa.</p>
+        <ul>
+          <li>IPI e crédito de insumos</li>
+          <li>Custo de produção por lote</li>
+          <li>Apuração no Lucro Real</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="recursos">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Como funciona</div>
+      <h2>Da configuração ao imposto pago</h2>
+      <p>Quatro peças que conversam entre si, para que nada precise ser calculado duas vezes.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat">
+        <div class="num mono">01</div>
+        <h3>Cadastro inteligente</h3>
+        <p>Informe o CNPJ e a EconoFinance já identifica CNAE, UF e sugere o regime tributário.</p>
+      </div>
+      <div class="feat">
+        <div class="num mono">02</div>
+        <h3>Motor de impostos</h3>
+        <p>Regras atualizadas por regime, aplicadas automaticamente a cada lançamento.</p>
+      </div>
+      <div class="feat">
+        <div class="num mono">03</div>
+        <h3>Funcionários e estoque</h3>
+        <p>Folha, encargos e movimentação de mercadorias alimentando a apuração em tempo real.</p>
+      </div>
+      <div class="feat">
+        <div class="num mono">04</div>
+        <h3>Relatórios prontos</h3>
+        <p>DRE simplificado, fluxo de caixa e guias de apuração, sempre atualizados.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="plans" id="planos">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Planos</div>
+      <h2>Um plano para cada estágio da empresa</h2>
+      <p>Comece pequeno e cresça sem trocar de sistema.</p>
+    </div>
+    <div class="plan-grid">
+      <div class="plan">
+        <div class="tier">Básico</div>
+        <div class="price">R$ 79<small>/mês</small></div>
+        <p class="desc">Para MEI e pequenas empresas com um único CNPJ.</p>
+        <ul>
+          <li>1 usuário</li>
+          <li>Até 5 funcionários</li>
+          <li>1 CNPJ</li>
+          <li>Apuração automática</li>
+        </ul>
+        <a href="pages/cadastro.html?plano=basico" class="btn btn-ghost">Escolher Básico</a>
+      </div>
+      <div class="plan featured">
+        <div class="tier">Profissional</div>
+        <div class="price">R$ 219<small>/mês</small></div>
+        <p class="desc">Para empresas em crescimento com equipe financeira.</p>
+        <ul>
+          <li>Até 5 usuários</li>
+          <li>Até 50 funcionários</li>
+          <li>1 CNPJ</li>
+          <li>Relatórios avançados</li>
+        </ul>
+        <a href="pages/cadastro.html?plano=profissional" class="btn btn-primary">Escolher Profissional</a>
+      </div>
+      <div class="plan">
+        <div class="tier">Enterprise</div>
+        <div class="price">Sob consulta</div>
+        <p class="desc">Para grupos empresariais e múltiplos CNPJs.</p>
+        <ul>
+          <li>Usuários ilimitados</li>
+          <li>Múltiplos CNPJs</li>
+          <li>Suporte prioritário</li>
+          <li>Acesso para contador</li>
+        </ul>
+        <a href="mailto:vendas@econofinance.com.br" class="btn btn-ghost">Falar com vendas</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="wrap">
+    <h2>Pare de calcular imposto na planilha.</h2>
+    <p>Configure sua empresa em minutos e deixe a apuração com a EconoFinance.</p>
+    <a href="#planos" class="btn btn-primary">Começar gratuitamente</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-row">
+    <span>© 2026 EconoFinance. Todos os direitos reservados.</span>
+    <span>Feito para empresas de comércio, serviços e indústria no Brasil.</span>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+<svg width="260" height="64" viewBox="0 0 260 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="barGrad" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#D4A24C"/>
+      <stop offset="100%" stop-color="#F1E4C6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ícone -->
+  <rect x="0" y="0" width="64" height="64" rx="16" fill="#123328"/>
+  <rect x="13" y="34" width="8" height="16" rx="1.5" fill="#EDE6D6"/>
+  <rect x="25" y="24" width="8" height="26" rx="1.5" fill="url(#barGrad)"/>
+  <path d="M37 50 V22 C37 22 37 15 41 11 C45 15 45 22 45 22 V50 Z" fill="#FFFFFF"/>
+
+  <!-- Wordmark -->
+  <text x="76" y="30" font-family="Space Grotesk, Arial, sans-serif" font-size="21" font-weight="600" fill="#123328">Econo</text>
+  <text x="76" y="30" font-family="Space Grotesk, Arial, sans-serif" font-size="21" font-weight="600" fill="#B98A2E" dx="63">Finance</text>
+  <text x="76" y="46" font-family="Manrope, Arial, sans-serif" font-size="9.5" letter-spacing="2.5" fill="#5B6F65">GESTÃO FINANCEIRA MULTIEMPRESA</text>
+</svg>

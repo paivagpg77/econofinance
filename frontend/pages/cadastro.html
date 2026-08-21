@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Criar conta — EconoFinance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/auth.css">
+</head>
+<body>
+
+<header>
+  <div class="nav wrap">
+    <a href="../index.html" aria-label="Página inicial EconoFinance">
+      <svg width="150" height="38" viewBox="0 0 260 64" xmlns="http://www.w3.org/2000/svg" aria-label="EconoFinance">
+        <defs>
+          <linearGradient id="barGradH2" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#D4A24C"/>
+            <stop offset="100%" stop-color="#F1E4C6"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="64" height="64" rx="16" fill="#123328"/>
+        <rect x="13" y="34" width="8" height="16" rx="1.5" fill="#EDE6D6"/>
+        <rect x="25" y="24" width="8" height="26" rx="1.5" fill="url(#barGradH2)"/>
+        <path d="M37 50 V22 C37 22 37 15 41 11 C45 15 45 22 45 22 V50 Z" fill="#FFFFFF"/>
+        <text x="76" y="30" font-family="Space Grotesk, Arial, sans-serif" font-size="21" font-weight="600" fill="#123328">Econo</text>
+        <text x="139" y="30" font-family="Space Grotesk, Arial, sans-serif" font-size="21" font-weight="600" fill="#B98A2E">Finance</text>
+      </svg>
+    </a>
+    <div style="display:flex; gap:12px;">
+      <span style="font-size:14px; color:var(--muted); align-self:center;">Já tem conta?</span>
+      <a href="login.html" class="btn btn-ghost">Entrar</a>
+    </div>
+  </div>
+</header>
+
+<main class="auth-wrap">
+  <div class="auth-card">
+    <h1>Criar conta</h1>
+    <p class="auth-sub">Comece gratuitamente. Você poderá cadastrar sua empresa no próximo passo.</p>
+
+    <div id="alertaCadastro" class="alert"></div>
+
+    <form id="formCadastro" novalidate>
+      <label for="nomeFantasia">Nome da empresa</label>
+      <input type="text" id="nomeFantasia" name="nomeFantasia" required placeholder="Ex: Padaria Bom Pão">
+
+      <label for="nome">Seu nome</label>
+      <input type="text" id="nome" name="nome" required placeholder="Nome completo">
+
+      <label for="email">E-mail</label>
+      <input type="email" id="email" name="email" required autocomplete="email" placeholder="voce@empresa.com.br">
+
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" name="senha" required minlength="8" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
+
+      <button type="submit" class="btn btn-primary" id="btnCadastro">Criar conta gratuita</button>
+    </form>
+
+    <p class="auth-footer-link">Já tem conta? <a href="login.html">Entrar</a></p>
+  </div>
+</main>
+
+<script src="../js/api.js"></script>
+<script>
+  const form = document.getElementById('formCadastro');
+  const btn = document.getElementById('btnCadastro');
+
+  // Guarda o plano escolhido na home (?plano=basico) para usar depois no checkout
+  const params = new URLSearchParams(window.location.search);
+  const planoEscolhido = params.get('plano');
+  if (planoEscolhido) {
+    sessionStorage.setItem('econofinance_plano_escolhido', planoEscolhido);
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    btn.textContent = 'Criando conta...';
+
+    try {
+      await Auth.register({
+        nomeFantasia: document.getElementById('nomeFantasia').value.trim(),
+        nome: document.getElementById('nome').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        senha: document.getElementById('senha').value,
+      });
+      // Depois de criar a conta, o próximo passo é cadastrar o CNPJ da empresa
+      window.location.href = 'cadastro-empresa.html';
+    } catch (err) {
+      mostrarAlerta('alertaCadastro', err.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Criar conta gratuita';
+    }
+  });
+
+  if (Auth.estaLogado()) {
+    window.location.href = 'dashboard.html';
+  }
+</script>
+
+</body>
+</html>

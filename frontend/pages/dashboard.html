@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel — EconoFinance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/app-shell.css">
+<link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+
+<div id="app"></div>
+
+<!-- Modal de apuração de impostos -->
+<div id="modalApuracao" class="modal-overlay" style="display:none;">
+  <div class="modal-card">
+    <h2 id="modalTitulo">Apurar impostos</h2>
+    <label for="faturamento">Faturamento do mês (R$)</label>
+    <input type="number" id="faturamento" min="0" step="0.01" placeholder="Ex: 45000.00">
+    <div id="alertaApuracao" class="alert"></div>
+    <div id="resultadoApuracao" class="resultado-apuracao" style="display:none;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fecharModal()">Fechar</button>
+      <button class="btn btn-primary" id="btnApurar" onclick="apurar()">Calcular</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/shell.js"></script>
+<script>
+  Auth.exigirLogin();
+  renderShell({ active: 'dashboard', title: 'Painel' });
+
+  document.getElementById('topbarActions').innerHTML =
+    `<button class="btn btn-primary" onclick="window.location.href='cadastro-empresa.html'">+ Nova empresa</button>`;
+
+  document.getElementById('pageContent').innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Empresas cadastradas</div>
+        <div class="kpi-value" id="kpiEmpresas">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Regime mais comum</div>
+        <div class="kpi-value" id="kpiRegime">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Última apuração</div>
+        <div class="kpi-value" id="kpiApuracao">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Status da conta</div>
+        <div class="kpi-value">Trial</div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Suas empresas</h2>
+    <div id="alertaDash" class="alert"></div>
+    <div id="listaEmpresas" class="empresas-grid">
+      <p class="dash-empty">Carregando empresas...</p>
+    </div>
+  `;
+
+  let empresaSelecionadaId = null;
+
+  async function carregarEmpresas() {
+    const container = document.getElementById('listaEmpresas');
+    try {
+      const empresas = await Companies.listar();
+
+      document.getElementById('kpiEmpresas').textContent = empresas.length;
+      document.getElementById('kpiRegime').textContent = calcularRegimeMaisComum(empresas);
+
+      if (empresas.length === 0) {
+        container.innerHTML = `
+          <div class="dash-empty-card">
+            <p>Você ainda não cadastrou nenhuma empresa.</p>
+            <button class="btn btn-primary" onclick="window.location.href='cadastro-empresa.html'">Cadastrar primeira empresa</button>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = empresas.map((empresa) => `
+        <div class="empresa-card">
+          <div class="empresa-card-top">
+            <h3>${empresa.razaoSocial}</h3>
+            <span class="badge">${formatarRegime(empresa.regimeTributario)}</span>
+          </div>
+          <p class="empresa-info">CNPJ: ${empresa.cnpj}</p>
+          <p class="empresa-info">${empresa.municipio} / ${empresa.uf} · CNAE ${empresa.cnaePrincipal}</p>
+          <button class="btn btn-ghost" onclick="abrirModal('${empresa.id}', '${empresa.razaoSocial}')">Apurar impostos</button>
+        </div>
+      `).join('');
+    } catch (err) {
+      mostrarAlerta('alertaDash', err.message, 'error');
+      container.innerHTML = '';
+    }
+  }
+
+  function calcularRegimeMaisComum(empresas) {
+    if (empresas.length === 0) return '—';
+    const contagem = {};
+    empresas.forEach((e) => { contagem[e.regimeTributario] = (contagem[e.regimeTributario] || 0) + 1; });
+    const maisComum = Object.entries(contagem).sort((a, b) => b[1] - a[1])[0][0];
+    return formatarRegime(maisComum);
+  }
+
+  function formatarRegime(regime) {
+    const nomes = {
+      simples_nacional: 'Simples Nacional',
+      lucro_presumido: 'Lucro Presumido',
+      lucro_real: 'Lucro Real',
+    };
+    return nomes[regime] || regime;
+  }
+
+  function abrirModal(companyId, nomeEmpresa) {
+    empresaSelecionadaId = companyId;
+    document.getElementById('modalTitulo').textContent = `Apurar impostos — ${nomeEmpresa}`;
+    document.getElementById('resultadoApuracao').style.display = 'none';
+    document.getElementById('alertaApuracao').className = 'alert';
+    document.getElementById('faturamento').value = '';
+    document.getElementById('modalApuracao').style.display = 'flex';
+  }
+
+  function fecharModal() {
+    document.getElementById('modalApuracao').style.display = 'none';
+  }
+
+  async function apurar() {
+    const faturamento = parseFloat(document.getElementById('faturamento').value);
+    const btn = document.getElementById('btnApurar');
+
+    if (!faturamento || faturamento <= 0) {
+      mostrarAlerta('alertaApuracao', 'Informe um valor de faturamento válido', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Calculando...';
+
+    try {
+      const impostos = await TaxEngine.apurar({
+        companyId: empresaSelecionadaId,
+        faturamentoMensal: faturamento,
+      });
+
+      const total = impostos.reduce((soma, i) => soma + parseFloat(i.valor), 0);
+      document.getElementById('kpiApuracao').textContent =
+        `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
+      const resultado = document.getElementById('resultadoApuracao');
+      resultado.style.display = 'block';
+      resultado.innerHTML = impostos.map((i) => `
+        <div class="resultado-linha">
+          <span>${i.tipoImposto.toUpperCase()}</span>
+          <span class="mono">R$ ${parseFloat(i.valor).toFixed(2)}</span>
+        </div>
+      `).join('');
+    } catch (err) {
+      mostrarAlerta('alertaApuracao', err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Calcular';
+    }
+  }
+
+  carregarEmpresas();
+</script>
+
+</body>
+</html>
