@@ -15,7 +15,7 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware';
       type: 'postgres',
       url: process.env.DATABASE_URL,
       autoLoadEntities: true,
-      synchronize: process.env.NODE_ENV !== 'production', // só em dev; usar migrations em produção
+      synchronize: process.env.NODE_ENV !== 'production', 
     }),
     JwtModule.register({
       global: true,
@@ -25,7 +25,7 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware';
     TenantsModule,
     CompaniesModule,
     TaxEngineModule,
-    // próximos módulos: employees, products, subscriptions
+    
   ],
 })
 export class AppModule implements NestModule {
