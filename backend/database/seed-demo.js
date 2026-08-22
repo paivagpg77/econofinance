@@ -1,13 +1,4 @@
-/**
- * Popula o sistema com dados de demonstração, passando pela API de verdade
- * (não insere direto no banco) — assim testa o fluxo real de ponta a ponta.
- *
- * Como rodar (com o backend já no ar em outro terminal):
- *   cd backend
- *   node database/seed-demo.js
- *
- * Requer Node 18+ (usa fetch nativo).
- */
+
 
 const API = 'http://localhost:3000/api';
 
