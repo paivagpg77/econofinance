@@ -31,9 +31,14 @@ function renderShell({ active, title }) {
 
         <div class="sidebar-section-label">Gestão</div>
         <ul class="sidebar-nav">
-          <li>${itemNav('funcionarios', '&#128101;', 'Funcionários', 'funcionarios.html', false)}</li>
-          <li>${itemNav('estoque', '&#128230;', 'Estoque', 'estoque.html', false)}</li>
-          <li>${itemNav('financeiro', '&#128176;', 'Financeiro', 'financeiro.html', false)}</li>
+          <li>${itemNav('funcionarios', '&#128101;', 'Funcionários', 'funcionarios.html')}</li>
+          <li>${itemNav('estoque', '&#128230;', 'Estoque', 'estoque.html')}</li>
+          <li>${itemNav('financeiro', '&#128176;', 'Financeiro', 'financeiro.html')}</li>
+        </ul>
+
+        <div class="sidebar-section-label">Análise</div>
+        <ul class="sidebar-nav">
+          <li>${itemNav('relatorios', '&#128200;', 'Relatórios', 'relatorios.html')}</li>
         </ul>
 
         <div class="sidebar-footer">

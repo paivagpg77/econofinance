@@ -96,6 +96,87 @@ const TaxEngine = {
   },
 };
 
+const Employees = {
+  listar(companyId) {
+    return apiRequest(`/companies/${companyId}/employees`);
+  },
+  criar(companyId, dto) {
+    return apiRequest(`/companies/${companyId}/employees`, { method: 'POST', body: dto });
+  },
+  resumo(companyId) {
+    return apiRequest(`/companies/${companyId}/employees/resumo`);
+  },
+};
+
+const Products = {
+  listar(companyId) {
+    return apiRequest(`/companies/${companyId}/products`);
+  },
+  criar(companyId, dto) {
+    return apiRequest(`/companies/${companyId}/products`, { method: 'POST', body: dto });
+  },
+  resumo(companyId) {
+    return apiRequest(`/companies/${companyId}/products/resumo`);
+  },
+};
+
+const Financeiro = {
+  listar(companyId) {
+    return apiRequest(`/companies/${companyId}/transactions`);
+  },
+  criar(companyId, dto) {
+    return apiRequest(`/companies/${companyId}/transactions`, { method: 'POST', body: dto });
+  },
+  resumo(companyId) {
+    return apiRequest(`/companies/${companyId}/transactions/resumo`);
+  },
+};
+
+/**
+ * Módulos como Funcionários/Estoque/Financeiro são por empresa, então cada
+ * página precisa saber qual empresa está "ativa". Guardamos essa escolha na
+ * sessão do navegador (não persiste entre sessões, é só o contexto atual).
+ */
+const EmpresaAtual = {
+  obterId() {
+    return sessionStorage.getItem('econofinance_empresa_atual');
+  },
+  definir(companyId) {
+    sessionStorage.setItem('econofinance_empresa_atual', companyId);
+  },
+};
+
+/**
+ * Monta um <select> de empresas no elemento indicado e chama onSelect(companyId)
+ * sempre que a empresa ativa muda (incluindo a seleção inicial/automática).
+ */
+async function montarSeletorEmpresa(elementId, onSelect) {
+  const select = document.getElementById(elementId);
+  const empresas = await Companies.listar();
+
+  if (empresas.length === 0) {
+    select.innerHTML = '<option value="">Nenhuma empresa cadastrada</option>';
+    return;
+  }
+
+  select.innerHTML = empresas
+    .map((e) => `<option value="${e.id}">${e.razaoSocial}</option>`)
+    .join('');
+
+  const idSalvo = EmpresaAtual.obterId();
+  const idValido = empresas.some((e) => e.id === idSalvo);
+  const idInicial = idValido ? idSalvo : empresas[0].id;
+
+  select.value = idInicial;
+  EmpresaAtual.definir(idInicial);
+  onSelect(idInicial);
+
+  select.addEventListener('change', () => {
+    EmpresaAtual.definir(select.value);
+    onSelect(select.value);
+  });
+}
+
 /** Mostra uma mensagem de erro/sucesso num elemento .alert já existente na página */
 function mostrarAlerta(elementId, mensagem, tipo = 'error') {
   const el = document.getElementById(elementId);

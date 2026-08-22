@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatórios — EconoFinance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/app-shell.css">
+<link rel="stylesheet" href="../css/dashboard.css">
+<link rel="stylesheet" href="../css/module.css">
+</head>
+<body>
+<div id="app"></div>
+
+<script src="../js/api.js"></script>
+<script src="../js/shell.js"></script>
+<script>
+  Auth.exigirLogin();
+  renderShell({ active: 'relatorios', title: 'Relatórios' });
+
+  document.getElementById('pageContent').innerHTML = `
+    <div class="module-toolbar">
+      <div class="empresa-selector">
+        Empresa: <select id="seletorEmpresa"></select>
+      </div>
+    </div>
+    <div id="alertaPagina" class="alert"></div>
+
+    <h2 class="section-title">Resumo financeiro</h2>
+    <div class="kpi-row" id="kpiFinanceiro"></div>
+
+    <h2 class="section-title" style="margin-top:32px;">Folha de pagamento</h2>
+    <div class="kpi-row" id="kpiFolha"></div>
+
+    <h2 class="section-title" style="margin-top:32px;">Estoque</h2>
+    <div class="kpi-row" id="kpiEstoque"></div>
+
+    <p style="margin-top:32px; font-size:13px; color:var(--muted);">
+      Este resumo mostra os totais acumulados de cada empresa. Filtro por período (mês/ano) ainda não está
+      disponível — é um dos próximos itens do back-end.
+    </p>
+  `;
+
+  async function carregarRelatorio(companyId) {
+    if (!companyId) return;
+
+    try {
+      const [financeiro, folha, estoque] = await Promise.all([
+        Financeiro.resumo(companyId),
+        Employees.resumo(companyId),
+        Products.resumo(companyId),
+      ]);
+
+      const saldoPositivo = Number(financeiro.saldo) >= 0;
+
+      document.getElementById('kpiFinanceiro').innerHTML = `
+        <div class="kpi-card"><div class="kpi-label">Total receitas</div><div class="kpi-value">R$ ${Number(financeiro.totalReceitas).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Total despesas</div><div class="kpi-value">R$ ${Number(financeiro.totalDespesas).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Saldo</div><div class="kpi-value" style="color:${saldoPositivo ? 'var(--primary-700)' : 'var(--danger)'}">R$ ${Number(financeiro.saldo).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div></div>
+      `;
+
+      document.getElementById('kpiFolha').innerHTML = `
+        <div class="kpi-card"><div class="kpi-label">Funcionários ativos</div><div class="kpi-value">${folha.ativos}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Total em salários</div><div class="kpi-value">R$ ${Number(folha.totalSalarios).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Custo estimado (c/ FGTS)</div><div class="kpi-value">R$ ${Number(folha.custoTotalEstimado).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div></div>
+      `;
+
+      document.getElementById('kpiEstoque').innerHTML = `
+        <div class="kpi-card"><div class="kpi-label">Produtos cadastrados</div><div class="kpi-value">${estoque.totalProdutos}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Valor total em estoque</div><div class="kpi-value">R$ ${Number(estoque.valorTotalEstoque).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Itens com estoque baixo</div><div class="kpi-value">${estoque.itensBaixoEstoque}</div></div>
+      `;
+    } catch (err) {
+      mostrarAlerta('alertaPagina', err.message, 'error');
+    }
+  }
+
+  montarSeletorEmpresa('seletorEmpresa', carregarRelatorio);
+</script>
+</body>
+</html>

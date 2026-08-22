@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estoque — EconoFinance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/app-shell.css">
+<link rel="stylesheet" href="../css/dashboard.css">
+<link rel="stylesheet" href="../css/module.css">
+</head>
+<body>
+<div id="app"></div>
+
+<div id="modalForm" class="modal-overlay" style="display:none;">
+  <div class="modal-card">
+    <h2>Novo produto</h2>
+    <div id="alertaForm" class="alert"></div>
+    <form id="formProduto">
+      <label>Nome do produto</label>
+      <input type="text" id="nome" required>
+      <label>SKU (código interno)</label>
+      <input type="text" id="sku" required>
+      <label>NCM (opcional)</label>
+      <input type="text" id="ncm" maxlength="8">
+      <div class="form-grid-2">
+        <div>
+          <label>Custo unitário (R$)</label>
+          <input type="number" id="custoUnitario" min="0" step="0.01" required>
+        </div>
+        <div>
+          <label>Preço de venda (R$)</label>
+          <input type="number" id="precoVenda" min="0" step="0.01" required>
+        </div>
+      </div>
+      <label>Estoque atual (unidades)</label>
+      <input type="number" id="estoqueAtual" min="0" step="1" required>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/shell.js"></script>
+<script>
+  Auth.exigirLogin();
+  renderShell({ active: 'estoque', title: 'Estoque' });
+
+  document.getElementById('topbarActions').innerHTML =
+    `<button class="btn btn-primary" onclick="abrirModal()">+ Novo produto</button>`;
+
+  document.getElementById('pageContent').innerHTML = `
+    <div class="module-toolbar">
+      <div class="empresa-selector">
+        Empresa: <select id="seletorEmpresa"></select>
+      </div>
+    </div>
+    <div id="alertaPagina" class="alert"></div>
+    <div class="kpi-row" id="kpiRow"></div>
+    <div id="tabelaContainer"></div>
+  `;
+
+  let companyIdAtual = null;
+
+  async function carregarTudo(companyId) {
+    companyIdAtual = companyId;
+    if (!companyId) return;
+
+    try {
+      const [resumo, produtos] = await Promise.all([
+        Products.resumo(companyId),
+        Products.listar(companyId),
+      ]);
+
+      document.getElementById('kpiRow').innerHTML = `
+        <div class="kpi-card"><div class="kpi-label">Produtos cadastrados</div><div class="kpi-value">${resumo.totalProdutos}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Valor total em estoque</div><div class="kpi-value">R$ ${Number(resumo.valorTotalEstoque).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Itens com estoque baixo</div><div class="kpi-value">${resumo.itensBaixoEstoque}</div></div>
+      `;
+
+      const container = document.getElementById('tabelaContainer');
+      if (produtos.length === 0) {
+        container.innerHTML = `<div class="empty-state">Nenhum produto cadastrado ainda para esta empresa.</div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="data-table">
+          <thead><tr><th>Produto</th><th>SKU</th><th>Custo</th><th>Preço venda</th><th>Estoque</th></tr></thead>
+          <tbody>
+            ${produtos.map((p) => `
+              <tr>
+                <td>${p.nome}</td>
+                <td class="mono">${p.sku}</td>
+                <td class="mono">R$ ${Number(p.custoUnitario).toFixed(2)}</td>
+                <td class="mono">R$ ${Number(p.precoVenda).toFixed(2)}</td>
+                <td>${p.estoqueAtual} ${p.estoqueAtual <= 5 ? '<span class="tag-pill tag-despesa">baixo</span>' : ''}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch (err) {
+      mostrarAlerta('alertaPagina', err.message, 'error');
+    }
+  }
+
+  montarSeletorEmpresa('seletorEmpresa', carregarTudo);
+
+  function abrirModal() {
+    document.getElementById('formProduto').reset();
+    document.getElementById('alertaForm').className = 'alert';
+    document.getElementById('modalForm').style.display = 'flex';
+  }
+  function fecharModal() {
+    document.getElementById('modalForm').style.display = 'none';
+  }
+
+  document.getElementById('formProduto').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnSalvar');
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+
+    try {
+      await Products.criar(companyIdAtual, {
+        nome: document.getElementById('nome').value.trim(),
+        sku: document.getElementById('sku').value.trim(),
+        ncm: document.getElementById('ncm').value.trim() || undefined,
+        custoUnitario: parseFloat(document.getElementById('custoUnitario').value),
+        precoVenda: parseFloat(document.getElementById('precoVenda').value),
+        estoqueAtual: parseInt(document.getElementById('estoqueAtual').value, 10),
+      });
+      fecharModal();
+      carregarTudo(companyIdAtual);
+    } catch (err) {
+      mostrarAlerta('alertaForm', err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Salvar';
+    }
+  });
+</script>
+</body>
+</html>

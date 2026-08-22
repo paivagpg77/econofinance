@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Funcionários — EconoFinance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/app-shell.css">
+<link rel="stylesheet" href="../css/dashboard.css">
+<link rel="stylesheet" href="../css/module.css">
+</head>
+<body>
+<div id="app"></div>
+
+<div id="modalForm" class="modal-overlay" style="display:none;">
+  <div class="modal-card">
+    <h2>Novo funcionário</h2>
+    <div id="alertaForm" class="alert"></div>
+    <form id="formFuncionario">
+      <label>Nome completo</label>
+      <input type="text" id="nome" required>
+      <label>CPF (somente números)</label>
+      <input type="text" id="cpf" maxlength="11" required>
+      <label>Cargo</label>
+      <input type="text" id="cargo" required>
+      <label>Salário base (R$)</label>
+      <input type="number" id="salarioBase" min="0" step="0.01" required>
+      <label>Data de admissão</label>
+      <input type="date" id="dataAdmissao" required>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/shell.js"></script>
+<script>
+  Auth.exigirLogin();
+  renderShell({ active: 'funcionarios', title: 'Funcionários' });
+
+  document.getElementById('topbarActions').innerHTML =
+    `<button class="btn btn-primary" onclick="abrirModal()">+ Novo funcionário</button>`;
+
+  document.getElementById('pageContent').innerHTML = `
+    <div class="module-toolbar">
+      <div class="empresa-selector">
+        Empresa: <select id="seletorEmpresa"></select>
+      </div>
+    </div>
+    <div id="alertaPagina" class="alert"></div>
+    <div class="kpi-row" id="kpiRow"></div>
+    <div id="tabelaContainer"></div>
+  `;
+
+  let companyIdAtual = null;
+
+  async function carregarTudo(companyId) {
+    companyIdAtual = companyId;
+    if (!companyId) return;
+
+    try {
+      const [resumo, funcionarios] = await Promise.all([
+        Employees.resumo(companyId),
+        Employees.listar(companyId),
+      ]);
+
+      document.getElementById('kpiRow').innerHTML = `
+        <div class="kpi-card"><div class="kpi-label">Funcionários ativos</div><div class="kpi-value">${resumo.ativos}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Total em salários</div><div class="kpi-value">R$ ${Number(resumo.totalSalarios).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Custo estimado (c/ FGTS)</div><div class="kpi-value">R$ ${Number(resumo.custoTotalEstimado).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div></div>
+      `;
+
+      const container = document.getElementById('tabelaContainer');
+      if (funcionarios.length === 0) {
+        container.innerHTML = `<div class="empty-state">Nenhum funcionário cadastrado ainda para esta empresa.</div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="data-table">
+          <thead><tr><th>Nome</th><th>Cargo</th><th>Salário base</th><th>Admissão</th><th>Status</th></tr></thead>
+          <tbody>
+            ${funcionarios.map((f) => `
+              <tr>
+                <td>${f.nome}</td>
+                <td>${f.cargo}</td>
+                <td class="mono">R$ ${Number(f.salarioBase).toFixed(2)}</td>
+                <td>${new Date(f.dataAdmissao).toLocaleDateString('pt-BR')}</td>
+                <td><span class="tag-pill tag-${f.status}">${f.status}</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch (err) {
+      mostrarAlerta('alertaPagina', err.message, 'error');
+    }
+  }
+
+  montarSeletorEmpresa('seletorEmpresa', carregarTudo);
+
+  function abrirModal() {
+    document.getElementById('formFuncionario').reset();
+    document.getElementById('alertaForm').className = 'alert';
+    document.getElementById('modalForm').style.display = 'flex';
+  }
+  function fecharModal() {
+    document.getElementById('modalForm').style.display = 'none';
+  }
+
+  document.getElementById('formFuncionario').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnSalvar');
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+
+    try {
+      await Employees.criar(companyIdAtual, {
+        nome: document.getElementById('nome').value.trim(),
+        cpf: document.getElementById('cpf').value.trim(),
+        cargo: document.getElementById('cargo').value.trim(),
+        salarioBase: parseFloat(document.getElementById('salarioBase').value),
+        dataAdmissao: document.getElementById('dataAdmissao').value,
+      });
+      fecharModal();
+      carregarTudo(companyIdAtual);
+    } catch (err) {
+      mostrarAlerta('alertaForm', err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Salvar';
+    }
+  });
+</script>
+</body>
+</html>

@@ -40,12 +40,23 @@ O front (pasta `frontend/`) espera a API em `http://localhost:3000/api` (definid
 2. `POST /api/auth/login` — retorna um JWT contendo `tenantId`
 3. Toda rota protegida exige `Authorization: Bearer <token>` — o `TenantMiddleware` extrai o `tenantId` automaticamente
 
-## Próximos módulos a implementar
+## Próximo módulo a implementar
 
-- `employees` — folha de pagamento e encargos
-- `products` — estoque de mercadorias
 - `subscriptions` — planos e integração com gateway de pagamento (Asaas/Pagar.me)
 - Popular a tabela `tax_rules` com as alíquotas reais por regime/CNAE/UF (hoje o motor de impostos depende dela estar preenchida)
+
+## Endpoints disponíveis
+
+Todos exigem `Authorization: Bearer <token>`, exceto os dois de auth marcados abaixo.
+
+- `POST /api/auth/register` *(sem token)* — cria tenant + usuário
+- `POST /api/auth/login` *(sem token)* — retorna o JWT
+- `GET /api/auth/me`
+- `GET/POST /api/companies`
+- `POST /api/tax-engine/apurar`
+- `GET/POST /api/companies/:companyId/employees` + `GET .../employees/resumo`
+- `GET/POST /api/companies/:companyId/products` + `GET .../products/resumo`
+- `GET/POST /api/companies/:companyId/transactions` + `GET .../transactions/resumo`
 
 ## Regra importante
 
