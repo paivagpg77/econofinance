@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios - EconoFinance</title>
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/app-shell.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="../econofinance-logo.svg" alt="EconoFinance">
+                <span>EconoFinance</span>
+            </div>
+            <nav class="menu">
+                <a href="../pages/dashboard.html" class="menu-item">
+                    <span class="icon">📊</span> Painel
+                </a>
+                <a href="../pages/funcionarios.html" class="menu-item">
+                    <span class="icon">👥</span> Funcionários
+                </a>
+                <a href="../pages/financeiro.html" class="menu-item">
+                    <span class="icon">💰</span> Financeiro
+                </a>
+                <a href="../pages/relatorios.html" class="menu-item active">
+                    <span class="icon">📈</span> Relatórios
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <h1>Relatórios</h1>
+            </header>
+
+            <div class="content">
+                <!-- Filtros -->
+                <div class="card">
+                    <h2>Filtros</h2>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label>Mês</label>
+                            <select id="mes">
+                                <option value="01">Janeiro</option>
+                                <option value="02">Fevereiro</option>
+                                <option value="03">Março</option>
+                                <option value="04">Abril</option>
+                                <option value="05">Maio</option>
+                                <option value="06">Junho</option>
+                                <option value="07">Julho</option>
+                                <option value="08" selected>Agosto</option>
+                                <option value="09">Setembro</option>
+                                <option value="10">Outubro</option>
+                                <option value="11">Novembro</option>
+                                <option value="12">Dezembro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Ano</label>
+                            <select id="ano">
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026" selected>2026</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button class="btn-primary" onclick="carregarRelatorio()" style="width: 100%;">Gerar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cards Resumo -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div class="card">
+                        <h3>Receitas</h3>
+                        <p style="font-size: 1.5rem; font-weight: bold; color: #10b981; margin: 0.5rem 0 0 0;" id="totalReceitas">R$ 0,00</p>
+                    </div>
+                    <div class="card">
+                        <h3>Despesas</h3>
+                        <p style="font-size: 1.5rem; font-weight: bold; color: #ef4444; margin: 0.5rem 0 0 0;" id="totalDespesas">R$ 0,00</p>
+                    </div>
+                    <div class="card">
+                        <h3>Folha</h3>
+                        <p style="font-size: 1.5rem; font-weight: bold; color: #f59e0b; margin: 0.5rem 0 0 0;" id="totalFolha">R$ 0,00</p>
+                    </div>
+                    <div class="card">
+                        <h3>Resultado</h3>
+                        <p style="font-size: 1.5rem; font-weight: bold; color: #667eea; margin: 0.5rem 0 0 0;" id="totalResultado">R$ 0,00</p>
+                    </div>
+                </div>
+
+                <!-- Gráficos -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div class="card">
+                        <h2>Receitas</h2>
+                        <canvas id="chartReceitas"></canvas>
+                    </div>
+                    <div class="card">
+                        <h2>Despesas</h2>
+                        <canvas id="chartDespesas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/shell.js"></script>
+    <script>
+        const companyId = localStorage.getItem('companyId') || 'test-company';
+        let chartReceitas, chartDespesas;
+
+        function formatMoney(value) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        }
+
+        async function carregarRelatorio() {
+            const mes = document.getElementById('mes').value;
+            const ano = document.getElementById('ano').value;
+
+            try {
+                const resR = await fetch(`http://localhost:3000/api/financial/revenues/${companyId}`);
+                const resD = await fetch(`http://localhost:3000/api/financial/expenses/${companyId}`);
+
+                const receitas = await resR.json();
+                const despesas = await resD.json();
+
+                const receitasPeriodo = receitas.filter(r => {
+                    const d = new Date(r.dataReceita);
+                    return String(d.getMonth() + 1).padStart(2, '0') === mes && d.getFullYear() === parseInt(ano);
+                });
+
+                const despesasPeriodo = despesas.filter(d => {
+                    const dt = new Date(d.dataDespesa);
+                    return String(dt.getMonth() + 1).padStart(2, '0') === mes && dt.getFullYear() === parseInt(ano);
+                });
+
+                const totalReceitas = receitasPeriodo.reduce((sum, r) => sum + parseFloat(r.valor), 0);
+                const totalDespesas = despesasPeriodo.reduce((sum, d) => sum + parseFloat(d.valor), 0);
+                const resultado = totalReceitas - totalDespesas;
+
+                document.getElementById('totalReceitas').textContent = formatMoney(totalReceitas);
+                document.getElementById('totalDespesas').textContent = formatMoney(totalDespesas);
+                document.getElementById('totalResultado').textContent = formatMoney(resultado);
+
+                const receitasPorTipo = {}, despesasPorTipo = {};
+                receitasPeriodo.forEach(r => { receitasPorTipo[r.tipo] = (receitasPorTipo[r.tipo] || 0) + parseFloat(r.valor); });
+                despesasPeriodo.forEach(d => { despesasPorTipo[d.tipo] = (despesasPorTipo[d.tipo] || 0) + parseFloat(d.valor); });
+
+                atualizarGraficos(receitasPorTipo, despesasPorTipo);
+            } catch (error) { console.error('Erro:', error); }
+        }
+
+        function atualizarGraficos(receitasPorTipo, despesasPorTipo) {
+            const ctxR = document.getElementById('chartReceitas').getContext('2d');
+            const ctxD = document.getElementById('chartDespesas').getContext('2d');
+
+            if (chartReceitas) chartReceitas.destroy();
+            if (chartDespesas) chartDespesas.destroy();
+
+            chartReceitas = new Chart(ctxR, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(receitasPorTipo),
+                    datasets: [{ data: Object.values(receitasPorTipo), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: true }
+            });
+
+            chartDespesas = new Chart(ctxD, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(despesasPorTipo),
+                    datasets: [{ data: Object.values(despesasPorTipo), backgroundColor: ['#ef4444', '#f97316', '#eab308'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: true }
+            });
+        }
+
+        carregarRelatorio();
+    </script>
+</body>
+</html>
